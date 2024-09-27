@@ -5,12 +5,14 @@ import net.kyori.adventure.nbt.TagStringIO;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.util.Codec;
+import net.minestom.server.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 /**
@@ -28,7 +30,7 @@ public final class MinestomAdventure {
      */
     public static boolean AUTOMATIC_COMPONENT_TRANSLATION = false;
     // todo: Need to properly add a translator interface so it can check for presence of a key for the flattener.
-    public static BiFunction<Component, Locale, Component> COMPONENT_TRANSLATOR = GlobalTranslator::render;
+    public static BiFunction<Component, Player, Component> COMPONENT_TRANSLATOR = (c,p) -> GlobalTranslator.render(c, Optional.ofNullable(p).map(Player::getLocale).orElseGet(MinestomAdventure::getDefaultLocale));
 
     static final Localizable NULL_LOCALIZABLE = () -> null;
 

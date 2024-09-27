@@ -16,7 +16,7 @@ final class MinestomFlattenerProvider {
         // handle server-side translations if needed
         builder.complexMapper(TranslatableComponent.class, ((component, consumer) -> {
             if (MinestomAdventure.AUTOMATIC_COMPONENT_TRANSLATION) {
-                final Component translated = MinestomAdventure.COMPONENT_TRANSLATOR.apply(component, MinestomAdventure.getDefaultLocale());
+                final Component translated = MinestomAdventure.COMPONENT_TRANSLATOR.apply(component, null);
 
                 // In case the translated component is also a translatable component, we just leave the key to avoid infinite recursion
                 if (translated instanceof TranslatableComponent translatable) {
