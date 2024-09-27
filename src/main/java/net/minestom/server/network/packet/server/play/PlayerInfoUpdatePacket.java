@@ -10,14 +10,12 @@ import net.minestom.server.network.player.GameProfile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.UnaryOperator;
 
 import static net.minestom.server.network.NetworkBuffer.*;
 
-public final class PlayerInfoUpdatePacket implements ServerPacket.Play {
+public final class PlayerInfoUpdatePacket implements ServerPacket.Play, ServerPacket.ComponentHolding {
     public static final int MAX_ENTRIES = 1024;
 
     private final @NotNull EnumSet<@NotNull Action> actions;
@@ -104,6 +102,21 @@ public final class PlayerInfoUpdatePacket implements ServerPacket.Play {
                 "actions=" + actions +
                 ", entries=" + entries +
                 '}';
+    }
+
+    @Override
+    public @NotNull Collection<Component> components() {
+        return entries.stream()
+                .map(Entry::displayName)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
+    public @NotNull ServerPacket copyWithOperator(@NotNull UnaryOperator<Component> operator) {
+        return new PlayerInfoUpdatePacket(actions, entries.stream()
+                .map(entry -> new Entry(entry.uuid, entry.username, entry.properties, entry.listed, entry.latency, entry.gameMode, operator.apply(entry.displayName()), entry.chatSession()))
+                .toList());
     }
 
     public record Entry(UUID uuid, String username, List<Property> properties,
