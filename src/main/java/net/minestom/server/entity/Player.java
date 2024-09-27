@@ -112,6 +112,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
@@ -236,6 +237,8 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
     // The future is non-null when a resource pack is in-flight, and completed when all statuses have been received.
     private CompletableFuture<Void> resourcePackFuture = null;
 
+    public Predicate<Player> sameServerPredicate = player -> true;
+
     public Player(@NotNull UUID uuid, @NotNull String username, @NotNull PlayerConnection playerConnection) {
         super(EntityType.PLAYER, uuid);
         this.username = username;
@@ -327,11 +330,11 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         EventDispatcher.call(skinInitEvent);
         this.skin = skinInitEvent.getSkin();
         // FIXME: when using Geyser, this line remove the skin of the client
-        PacketUtils.broadcastPlayPacket(getAddPlayerToList());
+        PacketUtils.broadcastPlayPacket(getAddPlayerToList(), sameServerPredicate);
 
         var connectionManager = MinecraftServer.getConnectionManager();
         for (var player : connectionManager.getOnlinePlayers()) {
-            if (player != this) {
+            if (player != this && sameServerPredicate.test(player)) {
                 sendPacket(player.getAddPlayerToList());
                 if (player.displayName != null) {
                     sendPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, player.infoEntry()));
@@ -605,7 +608,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         // Clear all viewable chunks
         ChunkUtils.forChunksInRange(chunkX, chunkZ, settings.getEffectiveViewDistance(), chunkRemover);
         // Remove from the tab-list
-        PacketUtils.broadcastPlayPacket(getRemovePlayerToList());
+        PacketUtils.broadcastPlayPacket(getRemovePlayerToList(), sameServerPredicate);
 
         // Prevent the player from being stuck in loading screen, or just unable to interact with the server
         // This should be considered as a bug, since the player will ultimately time out anyway.
@@ -1177,7 +1180,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
      */
     public void setDisplayName(@Nullable Component displayName) {
         this.displayName = displayName;
-        PacketUtils.broadcastPlayPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, infoEntry()));
+        PacketUtils.broadcastPlayPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, infoEntry()), sameServerPredicate);
     }
 
     /**
@@ -1219,11 +1222,11 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
 
         {
             // Remove player
-            PacketUtils.broadcastPlayPacket(removePlayerPacket);
+            PacketUtils.broadcastPlayPacket(removePlayerPacket, sameServerPredicate);
             sendPacketToViewers(destroyEntitiesPacket);
 
             // Show player again
-            PacketUtils.broadcastPlayPacket(addPlayerPacket);
+            PacketUtils.broadcastPlayPacket(addPlayerPacket, sameServerPredicate);
             getViewers().forEach(player -> showPlayer(player.getPlayerConnection()));
         }
 
@@ -1607,7 +1610,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         // Condition to prevent sending the packets before spawning the player
         if (isActive()) {
             sendPacket(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.CHANGE_GAMEMODE, gameMode.id()));
-            PacketUtils.broadcastPlayPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, infoEntry()));
+            PacketUtils.broadcastPlayPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, infoEntry()), sameServerPredicate);
         }
 
         // The client updates their abilities based on the GameMode as follows
@@ -2139,7 +2142,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
     public void refreshLatency(int latency) {
         this.latency = latency;
         if (getPlayerConnection().getConnectionState() == ConnectionState.PLAY) {
-            PacketUtils.broadcastPlayPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_LATENCY, infoEntry()));
+            PacketUtils.broadcastPlayPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_LATENCY, infoEntry()), sameServerPredicate);
         }
     }
 

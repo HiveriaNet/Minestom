@@ -157,6 +157,10 @@ public final class PacketUtils {
         sendGroupedPacket(MinecraftServer.getConnectionManager().getOnlinePlayers(), packet);
     }
 
+    public static void broadcastPlayPacket(@NotNull ServerPacket packet, @NotNull Predicate<Player> predicate) {
+        sendGroupedPacket(MinecraftServer.getConnectionManager().getOnlinePlayers(), packet, predicate);
+    }
+
     @ApiStatus.Experimental
     public static void prepareViewablePacket(@NotNull Viewable viewable, @NotNull ServerPacket serverPacket,
                                              @Nullable Entity entity) {
