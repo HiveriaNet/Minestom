@@ -298,6 +298,11 @@ public class PlayerSocketConnection extends PlayerConnection {
             PlayerPacketOutEvent event = new PlayerPacketOutEvent(player, serverPacket);
             outgoing.call(event);
             if (event.isCancelled()) return;
+            ServerPacket spoofPacket = event.getSpoofPacket();
+            if (spoofPacket != null) {
+                writeServerPacketSync(spoofPacket, compressed);
+                return;
+            }
         }
         // Write packet
         if (packet instanceof ServerPacket serverPacket) {
