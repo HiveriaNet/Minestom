@@ -588,7 +588,9 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
 
         if (permanent) {
             this.packets.clear();
-            EventDispatcher.call(new PlayerDisconnectEvent(this));
+            if (!isNpc()) {
+                EventDispatcher.call(new PlayerDisconnectEvent(this));
+            }
         }
 
         super.remove(permanent);
@@ -765,7 +767,9 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
             sendPacket(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0));
         }
 
-        EventDispatcher.call(new PlayerSpawnEvent(this, instance, firstSpawn));
+        if (!isNpc()) {
+            EventDispatcher.call(new PlayerSpawnEvent(this, instance, firstSpawn));
+        }
     }
 
     @ApiStatus.Internal
@@ -1552,6 +1556,10 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         return playerConnection.isOnline();
     }
 
+    public boolean isNpc() {
+        return false;
+    }
+
     /**
      * Gets the player settings.
      *
@@ -2264,7 +2272,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
                 List.of(new PlayerInfoUpdatePacket.Property("textures", skin.textures(), skin.signature())) :
                 List.of();
         return new PlayerInfoUpdatePacket.Entry(getUuid(), getUsername(), prop,
-                true, getLatency(), getGameMode(), displayName, null);
+                !isNpc(), getLatency(), getGameMode(), displayName, null);
     }
 
     /**
