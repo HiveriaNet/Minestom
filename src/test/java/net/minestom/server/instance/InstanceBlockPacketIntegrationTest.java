@@ -54,12 +54,9 @@ public class InstanceBlockPacketIntegrationTest {
         BlockHandler signHandler = new BlockHandler() {
             @Override
             public @NotNull Collection<Tag<?>> getBlockEntityTags() {
-                return List.of(Tag.Byte("GlowingText"),
-                        Tag.String("Color"),
-                        Tag.String("Text1"),
-                        Tag.String("Text2"),
-                        Tag.String("Text3"),
-                        Tag.String("Text4"));
+                return List.of(Tag.Byte("is_waxed"),
+                        Tag.NBT("front_text"),
+                        Tag.NBT("back_text"));
             }
 
             @Override
@@ -73,8 +70,11 @@ public class InstanceBlockPacketIntegrationTest {
         final Block block;
         final CompoundBinaryTag data;
         try {
-            data = (CompoundBinaryTag) TagStringIOExt.readTag("{\"GlowingText\":0B,\"Color\":\"black\",\"Text1\":\"{\\\"text\\\":\\\"wawsd\\\"}\"," +
-                    "\"Text2\":\"{\\\"text\\\":\\\"\\\"}\",\"Text3\":\"{\\\"text\\\":\\\"\\\"}\",\"Text4\":\"{\\\"text\\\":\\\"\\\"}\"}");
+            data = (CompoundBinaryTag) TagStringIOExt.readTag("{\"is_waxed\":0B," +
+                    "\"front_text\":{\"has_glowing_text\":0B,\"color\":\"black\",\"messages\":[" +
+                    "\"{\\\"text\\\":\\\"\\\"}\",\"{\\\"text\\\":\\\"\\\"}\",\"{\\\"text\\\":\\\"\\\"}\",\"{\\\"text\\\":\\\"\\\"}\"]}," +
+                    "\"back_text\":{\"has_glowing_text\":0B,\"color\":\"black\",\"messages\":[" +
+                    "\"{\\\"text\\\":\\\"\\\"}\",\"{\\\"text\\\":\\\"\\\"}\",\"{\\\"text\\\":\\\"\\\"}\",\"{\\\"text\\\":\\\"\\\"}\"]}}");
             block = Block.OAK_SIGN.withHandler(signHandler).withNbt(data);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
