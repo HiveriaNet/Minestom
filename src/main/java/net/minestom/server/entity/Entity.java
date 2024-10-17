@@ -30,7 +30,6 @@ import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.network.packet.server.CachedPacket;
 import net.minestom.server.network.packet.server.play.*;
-import net.minestom.server.permission.Permission;
 import net.minestom.server.permission.PermissionHandler;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
@@ -147,7 +146,6 @@ public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, Ev
     private final TagHandler tagHandler = TagHandler.newHandler();
     private final Scheduler scheduler = Scheduler.newScheduler();
     private final EventNode<EntityEvent> eventNode;
-    private final Set<Permission> permissions = new CopyOnWriteArraySet<>();
 
     private final UUID uuid;
     private boolean isActive; // False if entity has only been instanced without being added somewhere
@@ -173,6 +171,8 @@ public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, Ev
     private long ticks;
 
     private final Acquirable<Entity> acquirable = Acquirable.of(this);
+
+    public Predicate<String> permissionChecker = s -> false;
 
     public Entity(@NotNull EntityType entityType, @NotNull UUID uuid) {
         this.id = generateId();
@@ -522,10 +522,9 @@ public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, Ev
         viewers.forEach(this::updateNewViewer);
     }
 
-    @NotNull
     @Override
-    public Set<Permission> getAllPermissions() {
-        return permissions;
+    public boolean hasPermission(@NotNull String permission) {
+        return permissionChecker.test(permission);
     }
 
     /**
