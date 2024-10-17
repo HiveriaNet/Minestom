@@ -1241,6 +1241,13 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         teleport(getPosition());
     }
 
+    public void setSkinLayers(byte layers) {
+        this.settings.refresh(this.settings.locale, this.settings.viewDistance,
+                this.settings.chatMessageType, this.settings.chatColors, layers,
+                this.settings.mainHand, this.settings.enableTextFiltering,
+                this.settings.allowServerListings);
+    }
+
     public void setDeathLocation(@NotNull Pos position) {
         setDeathLocation(getInstance().getDimensionName(), position);
     }
