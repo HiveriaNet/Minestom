@@ -331,6 +331,9 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         this.skin = skinInitEvent.getSkin();
         // FIXME: when using Geyser, this line remove the skin of the client
         PacketUtils.broadcastPlayPacket(getAddPlayerToList(), sameServerPredicate);
+        if (displayName != null) {
+            sendPacket(new PlayerInfoUpdatePacket(PlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, infoEntry()));
+        }
 
         var connectionManager = MinecraftServer.getConnectionManager();
         for (var player : connectionManager.getOnlinePlayers()) {
